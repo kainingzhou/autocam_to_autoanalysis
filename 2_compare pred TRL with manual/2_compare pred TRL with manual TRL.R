@@ -24,15 +24,13 @@ View(Rootfly_raw2)
 
 # Delete root length of session 27 since Rootfly always return one extra session
 Rootfly_raw3 <- Rootfly_raw2[,-29]
-View(Rootfly_raw3)  
 
 Rootfly_raw3[is.na(Rootfly_raw3)] <- 0 # replace NA with 0
+View(Rootfly_raw3)  
 
+#====window1?????????,???????????????====
 Rootfly_long <- gather(Rootfly_raw3, Session, Rootlength, `Length date(1)`:`Length date(26)`, factor_key=TRUE)
 View(Rootfly_long)
-
-#attributes(cam3_every5days_long)$class
-#attributes(cam3_every5days_long)$class <- c("data.frame")
 
 # Load id
 id <- read_excel("C:/Users/Kaining/BGU ZKN/R/MR data analysis with R/from_aotocam_to_autoanalysis/from_autocam_to_autoanalysis/1_integrate multiple files generate by model/cam3_id.xlsx", 

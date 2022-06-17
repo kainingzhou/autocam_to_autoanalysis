@@ -28,7 +28,6 @@ Rootfly_raw3 <- Rootfly_raw2[,-29]
 Rootfly_raw3[is.na(Rootfly_raw3)] <- 0 # replace NA with 0
 View(Rootfly_raw3)  
 
-#====window1?????????,???????????????====
 Rootfly_long <- gather(Rootfly_raw3, Session, Rootlength, `Length date(1)`:`Length date(26)`, factor_key=TRUE)
 View(Rootfly_long)
 

@@ -15,6 +15,7 @@ library(dplyr)
 library(xlsx) # Write data into excel
 library(ggplot2)
 library(export)
+library(ggpubr)
 
 #===========================
 #=== For Rootfly data ======
@@ -164,7 +165,7 @@ ggplot(
   coord_flip()+
   ylim(0, 1.5)
 
-graph2ppt(file="ggplot2_plot.pptx", width=6, height=8, append = TRUE)
+graph2ppt(file="ggplot2_plot.pptx", width=6, height=8, append = FALSE)
 
 #=== Rooting depth ===========
 
@@ -473,10 +474,364 @@ ggplot(
 graph2ppt(file="ggplot2_plot.pptx", width=6, height=8, append = TRUE)
 
 
-#========================================================
-#=== Compare both dataset in the same graph =============
-#========================================================
+#====================================================================
+#=== Compare all points both datasets in the same graph =============
+#====================================================================
 
+# Load data
 R_bothmethod <- read_excel("C:/Users/Kaining/BGU ZKN/R/MR data analysis with R/from_aotocam_to_autoanalysis/from_autocam_to_autoanalysis/2_compare pred TRL with manual/compare_pred_n_manul.xlsx", 
                            sheet = "Compare TRL")
 View(R_bothmethod)
+
+# make graph
+ggplot(R_bothmethod,aes(x = Rootfly_TRL, y = Pred_TRL)) + 
+  geom_point(color=4,
+             size=4,
+             alpha=0.6
+             ) + 
+  geom_smooth(
+    method = "lm",
+    se=FALSE,
+    color="black") +
+  stat_regline_equation(label.y = 100, aes(label = ..eq.label..), size=8) +
+  stat_regline_equation(label.y = 90, aes(label = ..rr.label..), size=8)+
+  ylim(0, 120)+
+  xlim(0, 120)+
+  theme_classic()+
+  theme(
+    axis.title = element_text(
+      size=24
+    ),
+    axis.text = element_text(
+      size=24, 
+      color="black"
+    ),
+    axis.title.x = element_text(
+      margin = margin(
+        t = 20, 
+        r = 0, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.title.y = element_text(
+      margin = margin(
+        t = 0, 
+        r = 20, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.line = element_line(
+      size = 1, 
+      colour = "black"
+    ),
+    axis.ticks.length = unit(0.2, "cm"),
+    axis.ticks = element_line(
+      size = 1
+    )
+  )+
+  labs(x = "Ground truth TRL per image (mm)",
+       y="Model estimated TRL per image (mm)"
+  ) 
+
+# Export graph
+graph2ppt(file="ggplot2_plot.pptx", width=8, height=8, append = TRUE)
+
+#===================================================================================================
+#=== Make histogram graph to see how frequent when ground truth is 0 but model estimate other values =============
+#===================================================================================================
+R_bothmethod_zero <- R_bothmethod[R_bothmethod$Rootfly_TRL== 0,]
+model_zero <- R_bothmethod_zero$Pred_TRL
+
+ggplot(
+  R_bothmethod_zero, 
+  aes(
+    x = model_zero
+  )) +
+  geom_histogram(
+    aes(
+      y = ..count..
+    ), 
+    binwidth = 1,
+    colour = "white", 
+    fill = "orange"
+  ) +
+  scale_x_continuous(
+    name = "\nTRL estimated by model \nwhen ground truth is zero",
+    breaks = seq(0, 12, 2),
+    limits=c(0, 12)) +
+  scale_y_continuous(name = "Count\n")+
+  theme_classic()+
+  theme(
+    axis.title = element_text(
+      size=24
+    ),
+    axis.text = element_text(
+      size=24, 
+      color="black"
+    ),
+    axis.line = element_line(
+      size = 1, 
+      colour = "black"
+    ),
+    axis.ticks = element_line(
+      size = 1
+    )
+  )
+
+# Export graph
+graph2ppt(file="ggplot2_plot.pptx", width=8, height=8, append = TRUE)
+
+#=====================================================
+#=== Compare rooting depth with scattered graph ======
+#=====================================================
+
+names(Rootfly_Rdep)[names(Rootfly_Rdep) == 'Max_rooting_depth'] <- 'Rootfly_Max_Rdep'
+names(Model_Rdep)[names(Model_Rdep) == 'Max_rooting_depth'] <- 'Model_Max_Rdep'
+
+compare_Rdep <- merge(Rootfly_Rdep, Model_Rdep, by = c("DAP"))  
+
+# make graphs
+ggplot(compare_Rdep,aes(x = Rootfly_Max_Rdep, y = Model_Max_Rdep)) + 
+  geom_point(color=4,
+             size=4,
+             alpha=1
+  ) + 
+  geom_smooth(
+    method = "lm",
+    se=FALSE,
+    color="black") +
+  stat_regline_equation(label.x = 5,label.y = 70, aes(label = ..eq.label..), size=8) +
+  stat_regline_equation(label.x = 5,label.y = 60, aes(label = ..rr.label..), size=8)+
+  ylim(0, 80)+
+  xlim(0, 80)+
+  theme_classic()+
+  theme(
+    axis.title = element_text(
+      size=24
+    ),
+    axis.text = element_text(
+      size=24, 
+      color="black"
+    ),
+    axis.title.x = element_text(
+      margin = margin(
+        t = 20, 
+        r = 0, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.title.y = element_text(
+      margin = margin(
+        t = 0, 
+        r = 20, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.line = element_line(
+      size = 1, 
+      colour = "black"
+    ),
+    axis.ticks.length = unit(0.2, "cm"),
+    axis.ticks = element_line(
+      size = 1
+    )
+  )+
+  labs(x = "Ground truth maximum rooting depth(mm)",
+       y="Model estimated maximum rooting depth(mm)"
+  ) 
+
+# Export graph
+graph2ppt(file="ggplot2_plot.pptx", width=8, height=8, append = TRUE)
+
+#=======================================================
+#==== Compare Root arrival curve from two methods ======
+#=======================================================
+
+# Important: redefine the class of legend
+Rootfly_TRL$Depth <- as.factor(Rootfly_TRL$Depth) 
+Model_TRL$Depth <- as.factor(Model_TRL$Depth) 
+
+# Choose a color platte
+cols=brewer.pal(n = 6, name = "Dark2")
+
+# 1st plot: root arrive curve from manual annotation
+ggplot(
+    Rootfly_TRL,
+    aes(
+      x=DAP,
+      y=RLD,
+      colour = Depth,
+      shape = Depth,
+      group=Depth
+      )
+    )+
+  geom_line(
+    size= 1
+  )+
+  scale_color_manual(
+    values = cols,
+    name="Depth (cm)"
+    )+
+  scale_shape_manual(
+    values=c(
+      15, 16, 17, 18, 19, 20
+      ),
+    name="Depth (cm)"
+    )+
+  scale_x_continuous(
+    breaks = seq(0, 130, by = 10)
+    )+
+  geom_point(
+    size = 4
+             )+
+  theme_classic()+
+  theme(
+    plot.title = element_text(
+      size = 24,
+      face = "bold", 
+      colour = "black", 
+      hjust = 0.5
+    ),
+    legend.title = element_text(
+      size= 24
+    ),
+    legend.text = element_text(
+      size = 24
+    ),
+    axis.title = element_text(
+      size=24
+    ),
+    axis.text = element_text(
+      size=24, 
+      color="black"
+    ),
+    axis.text.x = element_text(
+      size=24, 
+      color="black",
+      angle = 60
+    ),
+    axis.title.x = element_text(
+      margin = margin(
+        t = 20, 
+        r = 0, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.title.y = element_text(
+      margin = margin(
+        t = 0, 
+        r = 20, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.line = element_line(
+      size = 1, 
+      colour = "black"
+    ),
+    axis.ticks.length = unit(0.2, "cm"),
+    axis.ticks = element_line(
+      size = 1
+    ),
+    legend.position = "right",
+    legend.spacing.y = unit(0.7, 'cm'),
+    legend.key.size = unit(1, 'cm')
+  )+
+  labs(title = "Root arrival curve from manual annotation\n", 
+       x = "Days after planting",
+       y=expression("RLD (cm/cm"^2*")",
+       )           
+  )
+
+# Export graph
+graph2ppt(file="ggplot2_plot.pptx", width=10, height=6, append = TRUE)
+
+# 2nd plot: root arrive curve from model estimation
+ggplot(
+  Model_TRL,
+  aes(
+    x=DAP,
+    y=RLD,
+    colour = Depth,
+    shape = Depth,
+    group=Depth
+  )
+)+
+  geom_line(
+    size= 1
+  )+
+  scale_color_manual(
+    values = cols,
+    name="Depth (cm)"
+  )+
+  scale_shape_manual(
+    values=c(
+      15, 16, 17, 18, 19, 20
+    ),
+    name="Depth (cm)"
+  )+
+  scale_x_continuous(
+    breaks = seq(0, 130, by = 10)
+  )+
+  geom_point(
+    size = 4
+  )+
+  theme_classic()+
+  theme(
+    plot.title = element_text(
+      size = 24,
+      face = "bold", 
+      colour = "black", 
+      hjust = 0.5
+    ),
+    legend.title = element_text(
+      size= 24
+    ),
+    legend.text = element_text(
+      size = 24
+    ),
+    axis.title = element_text(
+      size=24
+    ),
+    axis.text = element_text(
+      size=24, 
+      color="black"
+    ),
+    axis.text.x = element_text(
+      size=24, 
+      color="black",
+      angle = 60
+    ),
+    axis.title.x = element_text(
+      margin = margin(
+        t = 20, 
+        r = 0, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.title.y = element_text(
+      margin = margin(
+        t = 0, 
+        r = 20, 
+        b = 0, 
+        l = 0)
+    ),
+    axis.line = element_line(
+      size = 1, 
+      colour = "black"
+    ),
+    axis.ticks.length = unit(0.2, "cm"),
+    axis.ticks = element_line(
+      size = 1
+    ),
+    legend.position = "right",
+    legend.spacing.y = unit(0.7, 'cm'),
+    legend.key.size = unit(1, 'cm')
+  )+
+  labs(title = "Root arrival curve from model estimation\n", 
+       x = "Days after planting",
+       y=expression("RLD (cm/cm"^2*")",
+       )           
+  )
+
+# Export graph
+graph2ppt(file="ggplot2_plot.pptx", width=10, height=6, append = TRUE)

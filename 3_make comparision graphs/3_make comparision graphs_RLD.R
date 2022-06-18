@@ -16,6 +16,7 @@ library(xlsx) # Write data into excel
 library(ggplot2)
 library(export)
 library(ggpubr)
+library(RColorBrewer)# Use this to customize line colors
 
 #===========================
 #=== For Rootfly data ======
